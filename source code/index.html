@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Indian Government Schemes Chatbot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chat-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 600px;
+            overflow: hidden;
+            animation: slide-in-bottom 0.5s ease;
+        }
+        #chat-interface {
+            padding: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        #input-form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #eee;
+        }
+        #user-input {
+            flex: 1;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 15px;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+        #user-input:focus {
+            outline: none;
+        }
+        #send-button {
+            background-color: #4caf50;
+            color: #fff;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        #send-button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            word-wrap: break-word;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            animation: slide-in-bottom 0.3s ease;
+        }
+        .user-message {
+            background-color: #4caf50;
+            color: #fff;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #2196f3;
+            color: #fff;
+            align-self: flex-start;
+        }
+        @keyframes slide-in-bottom {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="chat-container">
+        <div id="chat-interface">
+            <div class="message bot-message">Welcome! Ask me about Indian government schemes.</div>
+        </div>
+        <form id="input-form">
+            <input type="text" id="user-input" placeholder="Type your message here..." required>
+            <button type="submit" id="send-button">Send</button>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('input-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const userInput = document.getElementById('user-input').value.trim();
+            if (userInput) {
+                addMessage(userInput, 'user-message');
+                processUserInput(userInput);
+                document.getElementById('user-input').value = '';
+            }
+        });
+
+        function addMessage(text, className) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${className}`;
+            messageDiv.innerText = text;
+            document.getElementById('chat-interface').appendChild(messageDiv);
+            document.getElementById('chat-interface').scrollTop = document.getElementById('chat-interface').scrollHeight;
+        }
+
+        function processUserInput(input) {
+            const schemeKeywords = {
+                'jan dhan yojana': 1,
+                'awas yojana': 2,
+                'mudra yojana': 3,
+                'jeevan jyoti bima yojana': 4,
+                'atal pension yojana': 5,
+                'kaushal vikas yojana': 6,
+                'fasal bima yojana': 7,
+                'suraksha bima yojana': 8,
+                'krishi sinchai yojana': 9,
+                'gramin awaas yojana': 10,
+                'gram sadak yojana': 11,
+                'matru vandana yojana': 12,
+                'sukanya samriddhi yojana': 13,
+                'mgnrega': 14,
+                'ayushman bharat': 15
+            };
+
+            let schemeId = null;
+            for (const keyword in schemeKeywords) {
+                if (input.toLowerCase().includes(keyword)) {
+                    schemeId = schemeKeywords[keyword];
+                    break;
+                }
+            }
+
+            if (schemeId) {
+                fetch(`http://localhost:5000/scheme/${schemeId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            addMessage(data.error, 'bot-message');
+                        } else {
+                            addMessage(`Scheme: ${data.name}\nDescription: ${data.description}\nEligibility: ${data.eligibility}\nBenefits: ${data.benefits}\nMore info: ${data.link}`, 'bot-message');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        addMessage('Sorry, there was an error processing your request.', 'bot-message');
+                    });
+            } else {
+                addMessage('I didn\'t understand that. Please ask about a specific scheme like "Jan Dhan Yojana", "Awas Yojana", "Mudra Yojana", "Jeevan Jyoti Bima Yojana", or "Atal Pension Yojana".', 'bot-message');
+            }
+        }
+    </script>
+</body>
+</html>
